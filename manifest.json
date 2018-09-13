@@ -1,0 +1,14 @@
+{
+    "manifest_version": 2,
+    "name": "siteTsar", 
+    "version": "1.0",
+    "permissions": ["storage", "alarms", "tabs"],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_popup": "popup.html"
+    }
+
+}
