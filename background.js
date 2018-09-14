@@ -25,6 +25,27 @@ function get_domain(url){
     return (url != undefined ? url.split("/")[2] : undefined);
 }
 
+function save_to_sync(windowId){
+    chrome.storage.local.get(function(items){
+        for(var site in Windows[windowId].visited){
+            let obj = new Object();
+
+            // Bug: Windows[windowId] is no longer there
+            if(site in items){
+                console.log("Site retrieved, updating..." + Windows[windowId].visited[site].duration_ms);
+                obj[site] = items[site];
+                obj[site].duration_ms += Windows[windowId].visited[site].duration_ms; 
+            }
+            else{
+                console.log("Site does not exist, making new entry...");
+                obj[site] = Windows[windowId].visited[site];
+            }
+            chrome.storage.local.set(obj);
+        }
+        delete Windows[windowId];
+    });
+}
+
 function window_init(new_wind){
     // Todo: need to handle when tab detached from window
     console.log("Staring new window!");
@@ -69,6 +90,7 @@ function tab_cleanup(tabId, removeInfo){
     // Responsibilities:
     // 1) Remove current tab info from window's tabs record
     // 2) Update curr to undefined (new tab_id will be assigned on actviated)
+    // Todo: fix when window close tab not recorded
     Windows[removeInfo.windowId].prev_tab_id = Windows[removeInfo.windowId].curr_tab_id;
     Windows[removeInfo.windowId].curr_tab_id = undefined;
     delete Windows[removeInfo.windowId].tabs[tabId];
@@ -78,7 +100,8 @@ function window_cleanup(windowId, removeInfo){
     // Responsibilities:
     // 1) Update the sync for visited sites
     // 2) Cleanup window
-    delete Windows[windowId];
+    record_site_duration(Windows[windowId].curr_domain, windowId, Windows[windowId].curr_tab_id);
+    save_to_sync(windowId);
 }
 
 function tab_update_handler(tabId, changeInfo, tab){
