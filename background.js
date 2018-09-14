@@ -22,7 +22,7 @@ function record_site_duration(url, windowId, tabId){
 }
 
 function get_domain(url){       
-    return (url != undefined ? url.split("/")[2] : undefined);
+    return (url != undefined ? url.split("/").slice(0, 3).join("/") : undefined);
 }
 
 function save_to_sync(windowId){
