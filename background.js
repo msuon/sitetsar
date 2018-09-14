@@ -1,3 +1,6 @@
+// Todo: Add categories of data for permenent storage (local at this point)
+// 1) "visited" for site data currently saved
+// 2) "settings" for storing all the settings
 var Windows = new Object();
 var wind_id;
 
@@ -100,8 +103,17 @@ function window_cleanup(windowId, removeInfo){
     // Responsibilities:
     // 1) Update the sync for visited sites
     // 2) Cleanup window
-    record_site_duration(Windows[windowId].curr_domain, windowId, Windows[windowId].curr_tab_id);
-    save_to_sync(windowId);
+
+    try{
+        record_site_duration(Windows[windowId].curr_domain, windowId, Windows[windowId].curr_tab_id);
+        save_to_sync(windowId);
+    }
+    catch(error) {
+        console.debug("WindowId: " + windowId);
+        console.debug(Windows);
+        console.error(error);
+        
+    }
 }
 
 function tab_update_handler(tabId, changeInfo, tab){
