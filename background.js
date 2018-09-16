@@ -2,6 +2,7 @@
 // 1) "visited" for site data currently saved
 // 2) "settings" for storing all the settings
 var Windows = new Object();
+var FocusedRecord = { curr_focused_window: undefined, prev_focused_window: undefined};
 var wind_id;
 
 function onNewTab(t){
@@ -13,15 +14,19 @@ function calculate_elapsed(start_ms){
     return new Date().getTime() - start_ms;
 }
 
-function record_site_duration(url, windowId, tabId){
-    let duration_ms = calculate_elapsed(Windows[windowId].last_update_ts);
+function record_site_duration(windowId, tabId){
+    let ts =  Windows[windowId].last_update_ts;
+    let url = Windows[windowId].curr_domain;
 
-    if(!(url in Windows[windowId].visited)){
-        Windows[windowId].visited[url] = new Object();
-        Windows[windowId].visited[url].duration_ms = 0;
+    if(url != undefined && ts != undefined){
+        let duration_ms = calculate_elapsed(ts);
+        if(!(url in Windows[windowId].visited)){
+            Windows[windowId].visited[url] = new Object();
+            Windows[windowId].visited[url].duration_ms = 0;
+        }
+        Windows[windowId].visited[url].domain = url;
+        Windows[windowId].visited[url].duration_ms += duration_ms;
     }
-    Windows[windowId].visited[url].domain = url;
-    Windows[windowId].visited[url].duration_ms += duration_ms;
 }
 
 function get_domain(url){       
@@ -77,9 +82,7 @@ function update_urls(tabId, tab){
     let url = Windows[tab.windowId].curr_domain;
     if(url != get_domain(tab.url) && tabId == Windows[tab.windowId].curr_tab_id){
 
-        if(url != undefined && Windows[tab.windowId].last_update_ts != undefined){
-            record_site_duration(url, tab.windowId, tabId);
-        }
+        record_site_duration(tab.windowId, tabId);
 
         Windows[tab.windowId].prev_domain = Windows[tab.windowId].curr_domain;
         Windows[tab.windowId].curr_domain = get_domain(tab.url);
@@ -99,13 +102,13 @@ function tab_cleanup(tabId, removeInfo){
     delete Windows[removeInfo.windowId].tabs[tabId];
 }
 
-function window_cleanup(windowId, removeInfo){
+function window_cleanup(windowId){
     // Responsibilities:
     // 1) Update the sync for visited sites
     // 2) Cleanup window
 
     try{
-        record_site_duration(Windows[windowId].curr_domain, windowId, Windows[windowId].curr_tab_id);
+        record_site_duration(windowId, Windows[windowId].curr_tab_id);
         save_to_sync(windowId);
     }
     catch(error) {
@@ -141,9 +144,40 @@ function tabChangedHandler(activeInfo){
 }
 
 
+function focus_changed_handler(windowId){
+    // Responsibilities:
+    // 1) Set curr_focused_window for tracking which window is in focus
+    // 2) Record time spent for window focus was taken from 
+    // 3) Setting prev_focused_window for assignment of inactive time (undefined)
+    console.log(FocusedRecord);
+    console.log(windowId);
+    console.log("prev_focus: " + FocusedRecord.curr_focused_window);
+    if(FocusedRecord.curr_focused_window != undefined && FocusedRecord.curr_focused_window in Windows){
+        record_site_duration(FocusedRecord.curr_focused_window, Windows[FocusedRecord.curr_focused_window].curr_tab_id);
+        Windows[FocusedRecord.prev_focused_window].last_update_ts = undefined;
+    }
+    if(windowId in Windows)
+        FocusedRecord.curr_focused_window = (windowId != -1) ? windowId : undefined;                // Save new focused id, but convert -1 to undefined for consistency sake 
+    FocusedRecord.prev_focused_window = FocusedRecord.curr_focused_window;
+    console.log("curr_focus: " + FocusedRecord.curr_focused_window);
+
+    if(windowId != -1){
+        Windows[FocusedRecord.curr_focused_window].last_update_ts = new Date().getTime();
+    }
+}
+
+function open_test_page(tab){
+    // Open a new tab with to the extension page
+    chrome.tabs.create({url: chrome.extension.getURL("popup.html")});
+}
+
+
 chrome.windows.onCreated.addListener(window_init);                                              // For when new window opened 
 chrome.windows.onRemoved.addListener(window_cleanup);                                           // For when window closes
 chrome.tabs.onCreated.addListener(tab_init);                                                    // For when new tab opened
 chrome.tabs.onRemoved.addListener(tab_cleanup);                                                 // For when tab closed
 chrome.tabs.onUpdated.addListener(tab_update_handler);                                          // For when url changed (in tab)
 chrome.tabs.onActivated.addListener(tabChangedHandler);                                         // For when tab changed
+chrome.windows.onFocusChanged.addListener(focus_changed_handler);                               // For when window focus changed.
+
+chrome.browserAction.onClicked.addListener(open_test_page);                                     // For when the button is presed
