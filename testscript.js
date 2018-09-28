@@ -2,11 +2,18 @@ var tabs = [];
 var test_cases = [];
 test_cases.push({url:"https://www.google.com/", wait: 3000});
 test_cases.push({url:"http://monirothsuon.com/", wait: 15000});
-// test_cases.push({url:"https://www.apple.com/", wait: 10000});
-// test_cases.push({url:"https://www.gmail.com/", wait: 5000});
-// test_cases.push({url:"https://www.amazon.com/", wait: 2000});
-// test_cases.push({url:"https://www.facebook.com/", wait: 4000});
-// test_cases.push({url:"https://www.youtube.com/", wait: 5000});
+test_cases.push({url:"https://www.apple.com/", wait: 10000});
+test_cases.push({url:"https://www.gmail.com/", wait: 5000});
+test_cases.push({url:"https://www.amazon.com/", wait: 2000});
+test_cases.push({url:"https://www.facebook.com/", wait: 4000});
+test_cases.push({url:"https://www.youtube.com/", wait: 5000});
+test_cases.push({url:"https://www.yahoo.com/", wait: 5000});
+test_cases.push({url:"https://www.walgreens.com/", wait: 5000});
+test_cases.push({url:"https://www.netflix.com/", wait: 5000});
+test_cases.push({url:"https://www.youtube.com/", wait: 5000});
+test_cases.push({url:"https://www.gmail.com/", wait: 5000});
+test_cases.push({url:"https://monirothsuon.com/", wait: 5000});
+test_cases.push({url:"https://www.apple.com/", wait: 5000});
 
 function delayed_open(delay, target_url){
     setTimeout(function (){
@@ -29,7 +36,7 @@ function duration_at_open(test_cases, windowId){
     setTimeout(function (){
         chrome.windows.remove(windowId, function (){
             console.log("ending!!");
-            chrome.windows.create({url: chrome.extension.getURL("test_summary.html")});
+            chrome.windows.create({url: chrome.extension.getURL("summary.html")});
         });
     }, delay);
 
@@ -59,7 +66,7 @@ function tab_switches(test_cases, windowId){
             chrome.windows.remove(windowId, function (){
 
                 // Open Summary Page
-                chrome.windows.create({url: chrome.extension.getURL("test_summary.html")});
+                chrome.windows.create({url: chrome.extension.getURL("summary.html")});
             });
         }, delay2);
     }, delay);
@@ -85,10 +92,7 @@ function tab_changes_test(){
 }
 
 
-window.onload = function (){
-    var btn = document.getElementById("button_1");
-    btn.onclick = basic_time_test;
+$(document).ready(function (){
+    $("#button_1").on("click", basic_time_test); 
+});
 
-//    var btn2 = document.getElementById("button_2");
-//    btn2.onclick = tab_changes_test;
-}

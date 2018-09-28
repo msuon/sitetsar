@@ -2,12 +2,18 @@
     "manifest_version": 2,
     "name": "siteTsar", 
     "version": "1.0",
-    "permissions": ["storage", "alarms", "tabs"],
+    "permissions": ["background", "storage", "alarms", "tabs"],
     "background": {
         "scripts": ["background.js"],
-        "persistent": false
+        "persistent": true
     },
     "browser_action": {
-    }
+    },
+    "content_scripts": [{
+        "js": [ "node_modules/jquery/dist/jquery.min.js", "content.js"],
+        "matches": ["http://*/*", "https://*/*"]
+    }],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'  https://cdnjs.cloudflare.com https://ajax.googleapis.com; object-src 'self'"
 
+ 
 }

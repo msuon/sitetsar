@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.js"></script> 
+        <script src ="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="summary.js"></script>
+        <link rel="stylesheet" type="text/css" href="summary.css">
+        <title>siteTsar Summary</title>
+    </head>
+    <body>
+        <script id="progress_bar" type="text/x-handlebars-template">
+            <div id="container">
+                <div id="header">
+                    <h2 id="headerTitle">siteTsar</h2>
+                </div>
+                {{#each sites}}
+                    <p id="domain_name">{{domain_name}}:</p> <progress id="prog_bar" value={{percentage}} max=100></progress> {{sec}}<br>
+                {{/each}}
+            </dvi>
+        </script> 
+    </body>
+</html>
